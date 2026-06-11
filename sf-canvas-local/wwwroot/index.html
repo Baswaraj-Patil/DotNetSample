@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Salesforce Canvas App (.NET)</title>
+    <!-- Salesforce Canvas SDK -->
+    <script type="text/javascript" src="https://salesforce.com"></script>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f3f3f3; margin: 20px;">
+    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2 style="color: #0176d3;">Hello from your .NET Minimal WebApp!</h2>
+        <p>This page is running on your local machine and rendering inside Salesforce Canvas.</p>
+        <p><strong>Current Server Time:</strong> <span id="server-time"></span></p>
+    </div>
+
+    <script type="text/javascript">
+        // Display local time
+        document.getElementById('server-time').innerText = new Date().toLocaleTimeString();
+
+        // Automatically resize the iframe container inside Salesforce
+        Sfdc.canvas(function() {
+            Sfdc.canvas.client.resize({ height: "450px" });
+        });
+    </script>
+</body>
+</html>
