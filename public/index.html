@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Salesforce Node Canvas App</title>
+    <!-- Include the Salesforce Canvas SDK -->
+    <script type="text/javascript" src="https://salesforce.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 15px; background-color: #fafafb; }
+        .card { background: white; padding: 20px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); max-width: 400px; }
+        input[type="text"] { width: 100%; padding: 8px; margin: 10px 0; border: 1px solid #c9c9c9; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #0176d3; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
+        button:hover { background-color: #014b87; }
+        #statusMessage { margin-top: 15px; font-weight: 500; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h3 style="color: #0176d3; margin-top: 0;">Salesforce Record Processor</h3>
+        <label for="accName">Enter Account Name to Upsert:</label>
+        <input type="text" id="accName" placeholder="e.g. Acme Crude Corporation..." />
+        <button id="submitBtn" onclick="triggerSalesforceUpsert()">Upsert Account Record</button>
+        <div id="statusMessage"></div>
+    </div>
+
+    <script type="text/javascript">
+        // Parse the URL tracking access parameters provided by the redirect routing wrapper
+        const urlParams = new URLSearchParams(window.location.search);
+        const sfToken = urlParams.get('token');
+        const sfInstance = urlParams.get('instance');
+
+        // Automatically call the Canvas SDK frame resizing engine
+        Sfdc.canvas(function() {
+            Sfdc.canvas.client.resize({ height: "350px" });
+        });
+
+        async function triggerSalesforceUpsert() {
+            const nameValue = document.getElementById('accName').value.trim();
+            const statusDiv = document.getElementById('statusMessage');
+            
+            if (!nameValue) {
+                statusDiv.style.color = "red";
+                statusDiv.innerText = "Please provide an account name string before submitting.";
+                return;
+            }
+
+            statusDiv.style.color = "orange";
+            statusDiv.innerText = "Processing record transaction in Salesforce cloud...";
+
+            try {
+                const res = await fetch('/api/upsert-account', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        accountName: nameValue,
+                        token: sfToken,
+                        instanceUrl: sfInstance
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    statusDiv.style.color = "green";
+                    statusDiv.innerText = data.message;
+                    document.getElementById('accName').value = ""; // clear field
+                } else {
+                    statusDiv.style.color = "red";
+                    statusDiv.innerText = "Error: " + JSON.stringify(data.errors);
+                }
+            } catch (err) {
+                statusDiv.style.color = "red";
+                statusDiv.innerText = "Network Exception: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
